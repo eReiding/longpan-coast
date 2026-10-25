@@ -1,0 +1,21 @@
+{
+  "name": "longpan-coast",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "terrain:update": "node tools/fetch-terrain.mjs",
+    "geo:update": "node tools/fetch-osm.mjs",
+    "terrain:export": "node tools/export-terrain.mjs"
+  },
+  "dependencies": {
+    "three": "^0.186.1"
+  },
+  "devDependencies": {
+    "pngjs": "^7.0.0",
+    "vite": "^7.3.1"
+  }
+}

@@ -1,0 +1,77 @@
+# WATER READY — REAL OSM COAST + CURLING SURF
+
+## API
+
+```js
+import { buildOcean, testOcean } from './water/ocean.js';
+
+const ocean = buildOcean(engine, field);
+// ocean: { group, update(t, dt), stats, shore }
+// group includes the Phillips sea, instanced curling ribbons and spray points.
+// Main program adds group once and calls update; no second shore texture is created.
+
+testOcean(engine, field);
+// => { position, target, fov: 56 }, using field.coastX(-174) when field is supplied.
+
+engine.registry.surfPeriod;
+// Seeded mean breaker period in seconds for audio reference.
+```
+
+`shore` is the exact object returned by `field.createShoreData(512)`. `stats.breakers` contains the surf sub-budget. Existing callers that only read `{group,update,stats}` remain compatible. Quality is sampled at build time.
+
+## Implementation
+
+- `ocean.js` calls `field.createShoreData(512)` exactly once. The old sine coastline was removed. Both ocean vertex/fragment shaders and surf shaders sample `coastLut` with `uv=(z-minZ)/(maxZ-minZ), 0.5`; `coastRange=(-5000,5000)` and the shore bounds are `x=-400..1300,z=-1400..1400`.
+- OSM metadata was inspected without dumping the JSON: coastline way `9410979`, `natural=coastline`, `source=PGS`; attribution `© OpenStreetMap contributors, ODbL 1.0`. Origin `21.927806,120.849472`, source bbox `120.842,21.918,120.858,21.938`.
+- Existing directional Phillips spectrum, deep-water dispersion, two inverse FFT transforms, 24 Hz cap, multiscale ripples, Beer–Lambert shallow transparency, analytic sky reflection, GGX glitter and animated lace foam are retained.
+- `breakers.js` adds short geometric crests along the LUT coast. Each instance has seeded length 8–26 m, active life 3.2–5.0 s, an additional 2.5–7.0 s gap, travel from 70–105 m to 44–56 m east of OSM coastX, height 0.45–1.15 m and width 0.9–1.8 m. Local LUT derivatives orient the shore normal; travel is mainly westward.
+- The ribbon has an 8×6 segment grid and interpolates from a rising wave profile to an overhanging curl profile before decaying. This is actual vertex geometry, not a white texture. The checked normalized curl profile reaches x=-0.63884 with an overhang above y=0.5.
+- High quality has 56 ribbons and 112 soft spray points; low has 40 and 80. Spray has independent emission phase, 0.55–1.05 s dissipation, shore/tangent/up velocities, wind drift and `g=9.81` ballistic fall. Point size follows the renderer drawing-buffer height.
+- Surf samples the shared FFT height texture for sea alignment and the shared 512 shore texture for water/land masking. Fragment-level masks reject high land/path coverage. Ocean, ribbon and spray use premultiplied NormalBlending, `depthWrite=false`, `depthTest=true`, and renderOrder 1/2/3. The double-sided ribbon uses `forceSinglePass=true`.
+- Surf animation is evaluated on the GPU from `env.time`; `update()` only refreshes the drawing-buffer height and does not iterate over crests or particles. No external asset, loader, private clock or random source was added.
+
+## Files
+
+- `src/water/ocean.js`: public API, LUT ocean shaders, shared-resource ownership, combined group/update/stats and real-coast test camera.
+- `src/water/breakers.js`: seeded lifecycle data, instanced curl geometry, ballistic soft spray, shared uniforms and surf stats.
+- `src/water/spectrum.js`: unchanged Phillips/deep-water/IFFT implementation and dynamic wave textures; Athenaion MIT notice retained.
+- `src/water/foam.js`: existing animated porous foam and shared procedural noise.
+- `src/water/READY`: this delivery record.
+
+## Measured resources
+
+| Resource | High | Low |
+| --- | ---: | ---: |
+| Ocean + surf draw calls | 3 | 3 |
+| Surf draw calls | 2 | 2 |
+| Ocean + surf triangles | 136,448 | 55,040 |
+| Surf triangles (points contribute 0) | 5,376 | 3,840 |
+| Ribbon instances / spray points | 56 / 112 | 40 / 80 |
+| Reported instances | 169 | 121 |
+| Reported vertices | 66,224 | 26,064 |
+| FFT size / max rate | 128 / 24 Hz | 64 / 24 Hz |
+| Geometry bytes | 2,380,336 | 936,752 |
+| Texture bytes (512 shore + 4096 LUT + FFT) | 4,516,523 | 4,287,147 |
+| Total resource bytes | 6,896,859 | 5,223,899 |
+| Serial real-field build | 967.59 ms | 915.50 ms |
+| Surf-only build | 1.50 ms | 0.60 ms |
+| Seeded `surfPeriod` | 8.893 s | 9.027 s |
+
+Final serial Node FFT samples measured 22.71 ms high and 1.03 ms low under current shared-machine load; these are CPU references, not browser GPU measurements, and are not the surf update cost. Surf itself adds only 14,884 / 11,300 geometry bytes high/low and no texture.
+
+## Verification
+
+- `npm run build`: passed with Vite 7.3.7, 54 modules transformed, 4.25 s. An independent Vite build of `src/water/ocean.js` also passed: 36,249-byte ES module with Three external.
+- Verified the 512² shore texture, exact new bounds, R-float 4096×1 coast texture, format/type and range. All 4096 LUT entries equal `Math.fround(field.coastX(z))` at their generated z samples.
+- Confirmed the old sine coefficients are absent, ocean and surf share the same coast/shore/FFT texture objects, and every declared custom uniform has a binding.
+- Re-ran independent direct DFT at nonzero time: relative error `6.3896e-8`, residual imaginary height `1.4426e-15`; deep-water dispersion checks passed.
+- Checked seeded rebuild determinism for all ribbon timing and spray particle attributes, random length/lifetime/travel ranges, 24 Hz throttling, `engine.registry.surfPeriod`, and the backward-compatible test-camera structure.
+- Checked actual curl/rise profile separation and overhang, gravity source, 56/40 instance counts, 112/80 spray counts, surf/total triangle budgets and renderOrder 1/2/3. All three materials retain premultiplied alpha, disabled depth writes and enabled depth tests. No reserved `patch`, `Math.random`, `Date.now` or 384 shore-data call was found in water source.
+
+## Known gaps / integration
+
+- No browser or server was started and no new screenshot was captured. Runtime GLSL compilation, actual curl readability, spray appearance, coast alignment, land/path masking and shallow-fish compositing still require the director's browser QA. Node geometry checks are not visual confirmation.
+- Breakers are seeded periodic geometric events, not a fluid simulation or FFT wave-collision solve. Coast normal is a local LUT derivative; exposed rocks and animals do not alter the trajectory. The 512 height mask is approximate at sub-texel reef edges.
+- Alpha remains a terrain-depth scalar approximation, without per-object scene-depth absorption or refractive UV distortion. Reflections remain analytic sky/sun. Water and surf do not cast/receive shadows.
+- Outside the 512 shore bounds, depth still uses the simplified bed fallback while coastX follows the full LUT. Any future transparent object behind the surf needs compatible ordering; water and surf do not write depth.
+- Main integration already calls `buildOcean`; no main, field, package or other module change is requested. Audio may read the provided `engine.registry.surfPeriod`.

@@ -1,0 +1,9 @@
+createField(dem, osm) — real-geography API is ready.
+
+- coastX(z) interpolates OSM way 9410979. It is not the old sine approximation.
+- createShoreData(size=512) returns {texture,bounds,coastLut,coastRange}. coastLut is an R-float 4096×1 texture of coastX in metres over z=-5000..5000.
+- paths / road are projected OSM polylines. viewpoints includes entrance, trail, meadow, overlook, valley, reef, sunrise, sunset.
+- ecologyAt(x,z) returns {height,shore,slope,aspect,exposure,shelter,pathDistance,roadDistance,zone}. Zones: reef, saltgrass, scrub, woodland. Preserve clear paths and the road.
+- env.cloudNoise is a shared {value:Data3DTexture|null}; sky fills it. Sun/time/daylight uniforms are shared.
+
+Do not mutate shared data or recreate a different coast in a module. Read docs/CONTRACT.md for ownership and build/test APIs.

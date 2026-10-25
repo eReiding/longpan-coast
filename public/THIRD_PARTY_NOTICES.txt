@@ -1,0 +1,94 @@
+LONGPAN COAST — THIRD-PARTY NOTICES
+
+All visible terrain, plants, animals and textures are generated locally by code. No stock photographs, stock models, Poly Haven textures or Rocketbox characters are used by the runtime. The main scene contains no person model.
+
+TERRAIN DATA
+
+Terrain Tiles by Mapzen/Tilezen, hosted by AWS Open Data.
+https://registry.opendata.aws/terrain-tiles/
+Source and license guidance: https://github.com/tilezen/joerd/blob/master/docs/attribution.md
+
+Required upstream attribution for this area:
+- SRTM data courtesy of the U.S. Geological Survey.
+- Global ETOPO1 terrain data U.S. National Oceanic and Atmospheric Administration.
+
+The bundled Terrarium elevations are low-resolution geographic constraints, not engineering survey data. Source tile URLs and metadata are included in src/data/elevation.json.
+
+ATHENAION / DERIVED PROCEDURAL UTILITIES
+
+MIT License
+Copyright (c) 2026 Leon Lin
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+THREE.JS
+
+The MIT License
+Copyright © 2010-2026 three.js authors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+ASHIMA / WEBGL-NOISE (SIMPLEX NOISE)
+
+Copyright (C) 2011 by Ashima Arts (Simplex noise)
+Copyright (C) 2011-2016 by Stefan Gustavson (Classic noise and others)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+BUILD / QA DEPENDENCIES
+
+Vite and pngjs are distributed under the MIT license. Their unmodified package distributions include the respective full notices. Vite is a build tool; pngjs is used by terrain-data and image-QA tools.
+
+OPENSTREETMAP GEOGRAPHIC DATA
+
+© OpenStreetMap contributors. The selected coastlines, roads and trails are used under the Open Database License (ODbL 1.0).
+https://www.openstreetmap.org/copyright
+Source API and selected way identifiers are retained in src/data/osm-coast.json. The JSON contains geographic points, not photographic map tiles. Procedural meshes are generated from those points.

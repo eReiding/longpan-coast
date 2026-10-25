@@ -1,0 +1,54 @@
+# WILDLIFE READY
+
+## Scope and public API
+
+The main scene contains no person, and this module does not build or restore one.
+
+```js
+import { buildWildlife, testWildlife } from './wildlife.js';
+
+const wildlife = buildWildlife(engine, field);
+// => { group, update(t, dt), stats }
+// Main owns scene.add(wildlife.group) and per-frame scheduling.
+
+testWildlife(engine, field);
+// => { position: [x,y,z], target: [x,y,z], fov }
+// Still targets tide pool 0 when available; original coast camera is the fallback.
+```
+
+## Implementation
+
+- `src/wildlife.js`: all-procedural, instanced coastal wildlife with deterministic `engine.rng(label)` and injected `t`/`dt` only.
+- Black-tailed-gull-inspired birds: gray backs, white bellies, dark wingtips, yellow bills with a dark ring, white tail with a dark terminal band. Base wingspan is 1.296 m before individual scale.
+- A few tern-inspired birds: narrower wings, dark cap, slimmer body and forked tail. Base wingspan is 1.010 m before individual scale. These are visual references, not an exact-species guide or external bird assets.
+- Flight follows the live OSM `field.coastX(z)` on elongated coastal circuits with roughly 430–640 m Z-axis spans. Gulls stay over sea/reef edges; open-water birds and terns remain farther offshore. Terrain clearance uses `field.heightAt`; no fixed legacy coast X is used.
+- Behavior includes long glides, short flap bursts, coordinated banking, and selected low dives with wing sweep and pull-up pitch. High quality has 5 diving birds; low quality has 3.
+- Each bird still consumes the original 9 RNG values in the original order/ranges, so downstream crab/fish/whale RNG sequencing is not changed by the bird revision.
+- Tide-pool fish indices 0–7, other fish schools, reef crabs and the long-period offshore whale retain their existing implementations. No water, controls, field or character change is included.
+
+## Measured resources
+
+| Quality | Birds | Total animals | Instance elements | Max draw calls | Triangles | Node build |
+| --- | --- | --- | --- | --- | --- | --- |
+| High | 20 = 16 gulls + 4 terns | 79 | 374 | 13 total / 6 birds | 48,875 | latest 50.24 ms |
+| Low | 12 = 10 gulls + 2 terns | 45 | 208 | 13 total / 6 birds | 28,135 | latest 4.69 ms |
+
+Animal counts and instance-element counts are unchanged. Separating gull/tern geometry adds 3 draw calls. The revised bird geometry adds 8,680 high-quality and 5,308 low-quality triangles compared with the previous checkpoint. A pure Node benchmark of the complete wildlife update, including terrain queries, measured 1.81 ms per step over 1,000 high-quality steps.
+
+## Node verification
+
+All checks used the real `createField(elevation, osm)` DEM + OSM field.
+
+- Base wingspans measured from actual wing geometry: 1.296 m gull / 1.010 m tern. All instance matrices and vertex-color attributes were present and finite.
+- 241 samples over 120 s for every bird: minimum maximum-displacement per bird 271.6 m; maximum inland excursion only 6.00002 m into the reef edge; minimum terrain clearance over land 6.5 m. No bird went below the 0.85 m sea-level safety floor.
+- Long-glide fraction was 82.57–95.02%; every bird had a measured flap range of at least 0.726 rad. Maximum bank range was 0.34167 rad (19.58 degrees).
+- All 5 designated high-quality divers were observed at y=1.15–1.72 m, with 0.718–0.868 rad pitch ranges and 0.418–0.520 rad wing-sweep ranges, confirming dive, sweep and pull-up rather than translation alone.
+- At t=8, five birds passed within 160 m of the current reef viewpoint, including a tern at approximately y=2 m; this verifies placement near a current inspection area, not visual framing quality.
+- Tide-pool fish again passed t=0, 2, 8, 16, 30 depth/range checks. All 22 high-quality crabs remained grounded. Whale surface and breach states both triggered. Same-seed duplicate builds produced identical instance matrices.
+- Low-quality counts, terrain clearance and reef-edge limits passed at t=0, 8, 30. Source scan found no `Math.random`, `Date.now`, character import, external loader or fetch.
+
+## Build status and remaining limits
+
+- Final `npm run build`: passed with Vite 7.3.7, 54 modules transformed, 10.20 s. Earlier attempts stopped on director-owned syntax errors in `src/trail.js:35` and then `src/audio.js:71`; those files were fixed by their owners, and the standard build was retried without changing wildlife or using an alternate build path.
+- No server, browser or screenshot was used. Species readability, wing shading, actual camera visibility, integrated shader/console cleanliness and the perceived quality of glide/dive motion remain for the director's visual QA. Node checks establish geometry, transforms and animation behavior, not visual acceptance.
+- Birds use terrain clearance but no bird-to-bird collision avoidance. No new shared interface or cross-module change is requested.

@@ -1,0 +1,34 @@
+# FLORA READY · ROUND 3 NORTH OVERLOOK REVISION
+
+## API
+
+`buildFlora(engine, field)` and `testFlora(engine, field)` retain their signatures and return shapes. Shared wind/cloud uniforms and seeded `engine.rng` are unchanged.
+
+## Coverage revision
+
+The previous integration image showed isolated dark crowns separated by bare ground. Flora now concentrates on the north overlook coastal band (`z=-400..370`, approximately `shore=48..510` by species), with only 2–10% fallback sampling depending on species. Counts are 3,200 scaevola, 1,400 ipomoea, 1,200 miscanthus, 350 sheltered scrub, 60 pandanus and 90 agave. The continuous structural canopy is owned by vegetation's constrained grid; flora adds species readability rather than uniform filler.
+
+Three seeded variants remain. Scaevola near LOD uses seven branching stems, secondary twigs and two-segment cupped leaves: 652 rather than 1,560 triangles per plant. Its far LOD uses five stems and enlarged folded/diamond leaves at 60 triangles. Other near leaves likewise retain two curved segments; far leaves use two triangles.
+
+## Culling and LOD
+
+192 m chunks provide conservative instance bounds and automatic frustum culling. Within each chunk, every plant is independently assigned to near/far LOD using distance hysteresis. Dynamic instance buffers are reordered only after the camera moves more than 1 m; rotation alone updates culling. Near and far meshes of one chunk may both draw, so stats count each selected mesh.
+
+## Required default-camera checkpoint
+
+Real DEM/OSM, camera `(145.6, field.heightAt(145.6,147.9)+1.68, 147.9)`, `yaw=PI`, `pitch=0.12`, FOV 56 and aspect 1440/900:
+
+- 6,300 built instances; 5,113 visible after culling.
+- 72 near / 6,228 far instances before frustum culling.
+- 318,120 visible triangles; 381,768 mixed-LOD triangles before culling.
+- 49 visible color draws; 4 near-shadow candidates with vegetation.
+- 15 populated chunks, 10 visible chunks.
+- Measured flora build: 474 ms.
+
+Combined with vegetation: 31,241 visible plants, 1,304,690 visible triangles, 100 color draws and 8 near-shadow candidates. This passes the requested approximately 2.5M triangle ceiling and <110 color draws. Moving the camera outside the area and facing away produces zero visible plants; restoring the required camera reproduces `[986570, 318120, 100]` exactly.
+
+Low-quality combined checkpoint: 15,802 built, 12,713 visible, 561,438 visible triangles, 95 color draws and 1,025 ms combined measured build. Repeated low builds produced digest 984574331.
+
+## Verification and limits
+
+Production build and JS syntax checks passed during the revision; final build is rerun after this record update. Node checks covered the exact required camera, finite instances/bounds, instance conservation, away-view culling, camera-move/restoration and deterministic rebuilds. No browser or external service was used. Visual crown continuity, bare-soil balance, shader appearance, wind and FPS remain director QA items.

@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#142b3d" />
+    <meta name="description" content="台灣墾丁龍磐公園，程序化生成的第一人稱海岸漫遊。風、草、礁岩與太平洋，都在即時運轉。" />
+    <title>龍磐 · 風入海岬 | Longpan Coast</title>
+  </head>
+  <body>
+    <canvas id="world" aria-label="龍磐公園三維海岸，拖動觀察，WASD 行走"></canvas>
+    <div id="ui"></div>
+    <div id="loading" role="status">
+      <div class="loading-inner">
+        <span class="eyebrow">LONGPAN COAST</span>
+        <p id="load-status">正在生成海岸地形…</p>
+        <div class="load-track"><span id="load-progress"></span></div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

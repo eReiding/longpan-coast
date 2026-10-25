@@ -1,0 +1,36 @@
+# VEGETATION READY · ROUND 3 SPATIAL CANOPY
+
+## API
+
+`buildVegetation(engine, field)` and `testVegetation(engine, field)` are unchanged. The module still returns `{group, update, stats}` and uses the shared wind field.
+
+## Continuous canopy strategy
+
+The main layer is no longer a map-wide random shrub scatter. A staggered spatial grid covers `z=-400..360` and `shore=70..470`, with 3.45 m along-coast and 3.55 m cross-shore spacing plus seeded sub-metre jitter. Typical crown widths are about 3–4 m, so neighboring crowns meet. Broad and detail noise determine connected colony boundaries and bare-soil holes; rock, sand, slope, trail and road masks still reject unsuitable cells. Edge plants are slightly smaller rather than forming a hard rectangle.
+
+High quality produces 14,305 canopy shrubs from 24,973 candidate grid cells. In a real-field connectivity check, 97.25% have another crown within 4.4 m and 93.96% have at least two neighbors. Generic grass is reduced from 88,000 to 18,000 and is concentrated in the same north-facing coastal region and trail margins.
+
+## Geometry and rendering
+
+Three deterministic variants remain. Near canopy shrubs have six curved branches, secondary twigs and two-segment cupped leaves at 474 triangles; far canopy uses five branches and fifteen enlarged folded diamond leaves at 60 triangles. Grass is 48/16 near/far triangles.
+
+112 m chunks own conservative bounds and automatic frustum culling. Per-instance near/far rebucketing inside each chunk prevents a large distant chunk from being promoted wholesale to near geometry. Buffers update only after more than 1 m camera movement; rotation does not rebucket.
+
+## Required default-camera checkpoint
+
+Real DEM/OSM, `(145.6, height+1.68, 147.9)`, `yaw=PI`, `pitch=0.12`, FOV 56, aspect 1440/900:
+
+- 32,305 built instances: 18,000 grass + 14,305 canopy.
+- 26,128 visible instances after frustum culling.
+- 986,570 visible triangles; 1,191,398 mixed-LOD triangles before culling.
+- 51 visible color draws and 4 near-shadow candidates.
+- 36 populated chunks, 23 visible chunks.
+- Measured vegetation build: 2,278 ms.
+
+Combined flora+vegetation: 31,241 visible instances, 1,304,690 visible triangles and 100 color draws, below the requested limits. Moving away and restoring the exact camera restores these statistics. Low-quality combined result is 15,802 built, 12,713 visible, 561,438 triangles and 95 draws; repeated builds are deterministic.
+
+## Stats and remaining QA
+
+`triangles` is the selected per-instance LOD after frustum culling; `lodTriangles` is before culling. `drawCalls` is visible color meshes. `shadowDrawCalls` is the visible near-shadow candidate count, not a claim about the renderer's shadow frustum. `buildMs` is measured with `performance.now()`.
+
+No browser was started by this agent. Actual visual continuity, residual bare patches, near-leaf appearance, shader runtime, wind, LOD popping and integrated FPS require director QA.
